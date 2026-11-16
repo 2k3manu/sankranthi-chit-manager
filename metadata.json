@@ -1,0 +1,6 @@
+{
+  "name": "Sankranthi Chit Fund Manager",
+  "description": "Chit fund management portal connected to Google Sheets for Sankranthi Chit, featuring automated balance calculations, second chit intelligence, and member tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
