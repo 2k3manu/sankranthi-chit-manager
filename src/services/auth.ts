@@ -1,33 +1,35 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import {
-  getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signOut,
-  User,
-} from 'firebase/auth';
-import firebaseConfig from '../../firebase-applet-config.json';
+export interface ManagerProfile {
+  id: string;
+  name: string;
+  email: string;
+}
 
-// Initialize Firebase App singleton
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-
-// Provider with mandatory Workspace scopes
-const provider = new GoogleAuthProvider();
-provider.addScope('https://www.googleapis.com/auth/spreadsheets');
-provider.addScope('https://www.googleapis.com/auth/drive.readonly');
-
-// Configured admin email list from user requirements
-export const ALLOWED_ADMIN_EMAILS = [
-  '2k3manu@gmail.com',
-  'ningaraj1905@gmail.com',
-  'mantyamora@gmail.com',
+export const MANAGER_PROFILES: ManagerProfile[] = [
+  { id: 'manu', name: 'Manu', email: '2k3manu@gmail.com' },
+  { id: 'ningaraj', name: 'Ningaraju', email: 'ningaraj1905@gmail.com' },
+  { id: 'mantyamora', name: 'Mantyamora', email: 'mantyamora@gmail.com' },
 ];
 
-// In-memory token cache (NEVER localStorage/sessionStorage as mandated by skill)
-let cachedAccessToken: string | null = null;
-let isSigningIn = false;
+export const ALLOWED_ADMIN_EMAILS = MANAGER_PROFILES.map((p) => p.email);
+
+export const MANAGER_PASSCODE = 'SANKRANTHI2026';
+
+const SESSION_STORAGE_KEY = 'sankranthi_chit_manager_session_v1';
+
+export interface AuthUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}
+
+interface StoredManagerSession {
+  profileId: string;
+  name: string;
+  email: string;
+  passcode: string;
+  unlockedAt: string;
+}
 
 export const isUserAdmin = (email: string | null | undefined): boolean => {
   if (!email) return false;
@@ -35,59 +37,104 @@ export const isUserAdmin = (email: string | null | undefined): boolean => {
   return ALLOWED_ADMIN_EMAILS.some((admin) => admin.toLowerCase() === normalized);
 };
 
+export function getSavedManagerSession(): StoredManagerSession | null {
+  try {
+    if (typeof window === 'undefined') return null;
+    const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredManagerSession;
+    const validProfile = MANAGER_PROFILES.find(
+      (p) => p.id === parsed.profileId || p.email.toLowerCase() === parsed.email?.toLowerCase()
+    );
+    if (!validProfile || parsed.passcode !== MANAGER_PASSCODE) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 export const initAuth = (
-  onAuthSuccess?: (user: User, token: string | null, isAdmin: boolean) => void,
+  onAuthSuccess?: (user: AuthUser, passcode: string | null, isAdmin: boolean) => void,
   onAuthFailure?: () => void
 ) => {
-  return onAuthStateChanged(auth, async (user: User | null) => {
-    if (user) {
-      const admin = isUserAdmin(user.email);
-      if (cachedAccessToken) {
-        if (onAuthSuccess) onAuthSuccess(user, cachedAccessToken, admin);
-      } else if (!isSigningIn) {
-        // If reloaded or token not available yet, user can sign in via button to grant scope token
-        if (onAuthSuccess) onAuthSuccess(user, null, admin);
-      }
-    } else {
-      cachedAccessToken = null;
-      if (onAuthFailure) onAuthFailure();
-    }
-  });
+  const session = getSavedManagerSession();
+  if (session) {
+    const user: AuthUser = {
+      uid: session.profileId,
+      email: session.email,
+      displayName: session.name,
+      photoURL: null,
+    };
+    onAuthSuccess?.(user, session.passcode, true);
+  } else {
+    onAuthFailure?.();
+  }
+  return () => {};
 };
 
-export const googleSignIn = async (): Promise<{
-  user: User;
+export const unlockManager = (
+  profileId: string,
+  passcode: string
+): {
+  user: AuthUser;
   accessToken: string;
   isAdmin: boolean;
-} | null> => {
-  try {
-    isSigningIn = true;
-    const result = await signInWithPopup(auth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    if (!credential?.accessToken) {
-      throw new Error('Failed to get access token from Google sign-in');
-    }
-
-    cachedAccessToken = credential.accessToken;
-    const admin = isUserAdmin(result.user.email);
-    return {
-      user: result.user,
-      accessToken: cachedAccessToken,
-      isAdmin: admin,
-    };
-  } catch (error: any) {
-    console.error('Google sign-in error:', error);
-    throw error;
-  } finally {
-    isSigningIn = false;
+} => {
+  const profile = MANAGER_PROFILES.find((p) => p.id === profileId);
+  if (!profile) {
+    throw new Error('Please select a valid manager profile.');
   }
+
+  if (passcode.trim() !== MANAGER_PASSCODE) {
+    throw new Error('Invalid Manager Passcode. Please check and try again.');
+  }
+
+  const session: StoredManagerSession = {
+    profileId: profile.id,
+    name: profile.name,
+    email: profile.email,
+    passcode: MANAGER_PASSCODE,
+    unlockedAt: new Date().toISOString(),
+  };
+
+  try {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+    }
+  } catch {
+    // ignore storage errors
+  }
+
+  const user: AuthUser = {
+    uid: profile.id,
+    email: profile.email,
+    displayName: profile.name,
+    photoURL: null,
+  };
+
+  return {
+    user,
+    accessToken: MANAGER_PASSCODE,
+    isAdmin: true,
+  };
+};
+
+export const getManagerPasscode = (): string | null => {
+  return getSavedManagerSession()?.passcode ?? null;
 };
 
 export const getAccessToken = (): string | null => {
-  return cachedAccessToken;
+  return getManagerPasscode();
 };
 
 export const logout = async () => {
-  await signOut(auth);
-  cachedAccessToken = null;
+  try {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    }
+  } catch {
+    // ignore storage errors
+  }
 };

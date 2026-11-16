@@ -6,16 +6,16 @@
   }
 
   code, pre, .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
 }
 
 @keyframes pulseBorder {
   0%, 100% {
-    border-color: rgba(168, 85, 247, 0.5);
+    border-color: rgba(99, 102, 241, 0.45);
   }
   50% {
-    border-color: rgba(168, 85, 247, 0.9);
+    border-color: rgba(99, 102, 241, 0.9);
   }
 }
 

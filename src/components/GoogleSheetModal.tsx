@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FileSpreadsheet,
   ExternalLink,
@@ -6,9 +6,13 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
-  Link as LinkIcon,
 } from 'lucide-react';
 import { ChitFundData } from '../types/chit';
+import {
+  DEFAULT_APPS_SCRIPT_URL,
+  getSavedAppsScriptUrl,
+  saveAppsScriptUrl,
+} from '../services/chitFundService';
 
 interface GoogleSheetModalProps {
   data: ChitFundData;
@@ -30,14 +34,21 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
   onLinkSpreadsheet,
 }) => {
   const [customId, setCustomId] = useState(data.spreadsheetId || '');
+  const [appsScriptUrl, setAppsScriptUrl] = useState(getSavedAppsScriptUrl());
   const [isLinking, setIsLinking] = useState(false);
   const [linkMsg, setLinkMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (data.spreadsheetId) {
       setCustomId(data.spreadsheetId);
     }
   }, [data.spreadsheetId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setAppsScriptUrl(getSavedAppsScriptUrl());
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -57,166 +68,191 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
     }
   };
 
+  const handleSaveAppsScript = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveAppsScriptUrl(appsScriptUrl);
+    setAppsScriptUrl(getSavedAppsScriptUrl());
+    setLinkMsg({ type: 'success', text: 'Apps Script Web App URL saved!' });
+    setTimeout(() => setLinkMsg(null), 3500);
+  };
+
+  const handleResetAppsScript = () => {
+    saveAppsScriptUrl(DEFAULT_APPS_SCRIPT_URL);
+    setAppsScriptUrl(DEFAULT_APPS_SCRIPT_URL);
+    setLinkMsg({ type: 'success', text: 'Reset Apps Script URL to default.' });
+    setTimeout(() => setLinkMsg(null), 3000);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+      <div className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+          className="absolute right-4 top-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
 
-        <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
-          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+          <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
             <FileSpreadsheet className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">
-              Google Sheet Integration Details
+            <h3 className="text-base font-bold text-slate-900">
+              Google Sheet & Apps Script Config
             </h3>
-            <p className="text-xs text-slate-400">
-              Connection to "{data.spreadsheetName}" ({data.sheetName})
+            <p className="text-xs text-slate-500">
+              Direct standalone connection to "{data.spreadsheetName}" ({data.sheetName})
             </p>
           </div>
         </div>
 
         <div className="mt-5 space-y-4 text-xs">
           {/* Status Details */}
-          <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-2.5">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-slate-400">Spreadsheet Name:</span>
-              <span className="font-semibold text-white">{data.spreadsheetName}</span>
+              <span className="text-slate-500">Spreadsheet Name:</span>
+              <span className="font-semibold text-slate-900">{data.spreadsheetName}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-400">Worksheet Tab:</span>
-              <span className="font-semibold text-emerald-400">{data.sheetName}</span>
+              <span className="text-slate-500">Worksheet Tab:</span>
+              <span className="font-semibold text-emerald-700">{data.sheetName}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-400">Sync Status:</span>
+              <span className="text-slate-500">Sync Status:</span>
               {data.isLiveSynced ? (
-                <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-400">
+                <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   Live Tracked ({data.totalRounds - data.monthsLeft} completed rounds)
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 font-semibold text-amber-400">
+                <span className="inline-flex items-center gap-1.5 font-semibold text-amber-700">
                   <AlertCircle className="w-3.5 h-3.5" />
-                  Cached / Not Yet Synced from Google Sheet
+                  Offline / Fallback Snapshot
                 </span>
               )}
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-400">Monthly Auto-Sync Mode:</span>
-              {data.publicAutoSyncAvailable ? (
-                <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-400">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  24/7 Automatic (No Login Required)
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 font-semibold text-amber-300">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  Manager Sign-In Only (Private Sheet)
-                </span>
-              )}
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">Rounds Range:</span>
-              <span className="font-mono text-amber-400">Columns C to V (20 Rounds)</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">Primary Chit Rows:</span>
-              <span className="font-mono text-slate-300">
-                Row 24 (Winner) • Row 25 (Amount) • Row 26 (Balance)
+              <span className="text-slate-500">Write Bridge:</span>
+              <span className="inline-flex items-center gap-1.5 font-semibold text-indigo-700">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Apps Script Web App (Works via file://)
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-400">Second Chit Rows:</span>
-              <span className="font-mono text-slate-300">
-                Row 27 (Winner) • Row 28 (Amount) • Row 29 (Final Rem)
+              <span className="text-slate-500">Rounds Range:</span>
+              <span className="font-mono text-indigo-700 font-semibold">
+                Columns C to V (20 Rounds)
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-400">Last Synced:</span>
-              <span className="text-slate-300">
+              <span className="text-slate-500">Last Synced:</span>
+              <span className="text-slate-700 font-medium">
                 {new Date(data.lastSyncedAt).toLocaleString('en-IN')}
               </span>
             </div>
           </div>
 
-          {data.spreadsheetId && !data.publicAutoSyncAvailable && (
-            <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-700/40 text-amber-200 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <span>
-                To make the app sync <strong>automatically every month without needing sign-in</strong>, open your Google Sheet → click <strong>Share</strong> → change General access to <strong>"Anyone with the link" (Viewer)</strong>.
-              </span>
-            </div>
-          )}
-
           {/* Direct Link */}
-          {data.spreadsheetUrl ? (
-            <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-950/30 border border-emerald-800/40 text-emerald-300">
-              <span className="font-medium">Spreadsheet linked ({data.spreadsheetId?.slice(0, 12)}...)</span>
+          {data.spreadsheetUrl && (
+            <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800">
+              <span className="font-semibold">
+                Spreadsheet linked ({data.spreadsheetId?.slice(0, 12)}...)
+              </span>
               <a
                 href={data.spreadsheetUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition text-[11px]"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition text-[11px]"
               >
                 <span>Open in Google Sheets</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>
-          ) : (
-            <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-700/40 text-amber-200 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <span>
-                No Spreadsheet ID linked yet. Click <strong>Sync Now</strong> (or paste your Google Sheet URL below) to pull live entries from Google Sheets.
-              </span>
-            </div>
           )}
 
-          {/* Admin Spreadsheet Link Input */}
+          {/* Admin Settings: Spreadsheet ID + Apps Script Web App URL */}
           {isAdmin && (
-            <form onSubmit={handleLink} className="pt-2 border-t border-slate-800 space-y-2">
-              <label className="block text-slate-300 font-semibold">
-                Google Sheet URL or ID (Manager Setting):
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={customId}
-                  onChange={(e) => setCustomId(e.target.value)}
-                  placeholder="Paste https://docs.google.com/spreadsheets/d/... URL or ID"
-                  className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
-                />
-                <button
-                  type="submit"
-                  disabled={isLinking}
-                  className="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition disabled:opacity-50"
-                >
-                  {isLinking ? 'Syncing...' : 'Link & Sync'}
-                </button>
-              </div>
+            <div className="space-y-4 pt-2 border-t border-slate-100">
+              <form onSubmit={handleLink} className="space-y-2">
+                <label className="block text-slate-700 font-semibold">
+                  Google Sheet URL or ID:
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customId}
+                    onChange={(e) => setCustomId(e.target.value)}
+                    placeholder="Paste https://docs.google.com/spreadsheets/d/... URL or ID"
+                    className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-mono"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isLinking}
+                    className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition disabled:opacity-50 cursor-pointer"
+                  >
+                    {isLinking ? 'Syncing...' : 'Link & Sync'}
+                  </button>
+                </div>
+              </form>
+
+              <form onSubmit={handleSaveAppsScript} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-slate-700 font-semibold">
+                    Apps Script Web App URL:
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleResetAppsScript}
+                    className="text-[11px] text-indigo-600 hover:underline font-medium cursor-pointer"
+                  >
+                    Reset to Default
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={appsScriptUrl}
+                    onChange={(e) => setAppsScriptUrl(e.target.value)}
+                    placeholder="https://script.google.com/macros/s/.../exec"
+                    className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-mono"
+                  />
+                  <button
+                    type="submit"
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer"
+                  >
+                    Save URL
+                  </button>
+                </div>
+              </form>
+
               {linkMsg && (
-                <p className={`font-semibold ${linkMsg.type === 'error' ? 'text-rose-400' : 'text-emerald-400'}`}>
+                <p
+                  className={`font-semibold ${
+                    linkMsg.type === 'error' ? 'text-rose-600' : 'text-emerald-700'
+                  }`}
+                >
                   {linkMsg.text}
                 </p>
               )}
-            </form>
+            </div>
           )}
 
           {/* Manual Re-sync button */}
           <div className="pt-2 flex items-center justify-between">
-            <span className="text-slate-400 text-[11px]">
-              Auto-syncs every 30s when connected to Google Sheets.
+            <span className="text-slate-500 text-[11px]">
+              Auto-syncs every 30s directly from Google Sheets.
             </span>
             <button
               onClick={onSync}
               disabled={isSyncing}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200 transition disabled:opacity-50 cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-amber-400' : ''}`} />
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${
+                  isSyncing ? 'animate-spin text-indigo-600' : 'text-slate-600'
+                }`}
+              />
               <span>{isSyncing ? 'Synchronizing...' : 'Sync Now'}</span>
             </button>
           </div>

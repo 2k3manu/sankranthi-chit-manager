@@ -54,6 +54,8 @@ export interface RawRoundInput {
   secondAmount?: number;
 }
 
+export const DEFAULT_SPREADSHEET_ID = '1HqU4ECWFsHF7nutCYFsPLFzG4bURQujV6M3XGZDFDoA';
+
 export const INITIAL_ROUND_INPUTS: RawRoundInput[] = [
   { roundNumber: 1, primaryWinner: 'Raju Auto', primaryAmount: 38500 },
   { roundNumber: 2, primaryWinner: 'Chikkaningasetty', primaryAmount: 40500 },
@@ -70,8 +72,8 @@ export const INITIAL_ROUND_INPUTS: RawRoundInput[] = [
   { roundNumber: 7, primaryWinner: 'Somanna', primaryAmount: 43000 },
   { roundNumber: 8, primaryWinner: 'Shanthakumar', primaryAmount: 42400 },
   { roundNumber: 9, primaryWinner: 'Shrinivasa', primaryAmount: 44500 },
-  { roundNumber: 10 },
-  { roundNumber: 11 },
+  { roundNumber: 10, primaryWinner: 'Ningaraju', primaryAmount: 44600 },
+  { roundNumber: 11, primaryWinner: 'Rajanna', primaryAmount: 43400 },
   { roundNumber: 12 },
   { roundNumber: 13 },
   { roundNumber: 14 },

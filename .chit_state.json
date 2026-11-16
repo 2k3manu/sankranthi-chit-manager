@@ -1,0 +1,207 @@
+{
+  "spreadsheetId": "1HqU4ECWFsHF7nutCYFsPLFzG4bURQujV6M3XGZDFDoA",
+  "spreadsheetName": "Sankranthi Chit",
+  "sheetName": "Sheet1",
+  "sheetGid": 0,
+  "roundInputs": [
+    {
+      "roundNumber": 1,
+      "primaryWinner": "Raju Auto",
+      "primaryAmount": 38500
+    },
+    {
+      "roundNumber": 2,
+      "primaryWinner": "Chikkaningasetty",
+      "primaryAmount": 40500
+    },
+    {
+      "roundNumber": 3,
+      "primaryWinner": "Agent",
+      "primaryAmount": 50000
+    },
+    {
+      "roundNumber": 4,
+      "primaryWinner": "Gurumurthy",
+      "primaryAmount": 40400
+    },
+    {
+      "roundNumber": 5,
+      "primaryWinner": "Pavi",
+      "primaryAmount": 43500
+    },
+    {
+      "roundNumber": 6,
+      "primaryWinner": "Manu",
+      "primaryAmount": 41800,
+      "secondWinner": "Hanumamma",
+      "secondAmount": 42100
+    },
+    {
+      "roundNumber": 7,
+      "primaryWinner": "Somanna",
+      "primaryAmount": 43000
+    },
+    {
+      "roundNumber": 8,
+      "primaryWinner": "Shanthakumar",
+      "primaryAmount": 42400
+    },
+    {
+      "roundNumber": 9,
+      "primaryWinner": "Shrinivasa",
+      "primaryAmount": 44500
+    },
+    {
+      "roundNumber": 10,
+      "primaryWinner": "Ningaraju",
+      "primaryAmount": 44600
+    },
+    {
+      "roundNumber": 11,
+      "primaryWinner": "Rajanna",
+      "primaryAmount": 43400
+    },
+    {
+      "roundNumber": 12
+    },
+    {
+      "roundNumber": 13
+    },
+    {
+      "roundNumber": 14
+    },
+    {
+      "roundNumber": 15
+    },
+    {
+      "roundNumber": 16
+    },
+    {
+      "roundNumber": 17
+    },
+    {
+      "roundNumber": 18
+    },
+    {
+      "roundNumber": 19
+    },
+    {
+      "roundNumber": 20
+    }
+  ],
+  "customDates": [
+    "10-01-2026",
+    "10-02-2026",
+    "10-03-2026",
+    "10-04-2026",
+    "10-05-2026",
+    "10-06-2026",
+    "10-07-2026",
+    "10-08-2026",
+    "10-09-2026",
+    "10-10-2026",
+    "10-11-2026",
+    "10-12-2026",
+    "10-01-2027",
+    "10-02-2027",
+    "10-03-2027",
+    "10-04-2027",
+    "10-05-2027",
+    "10-06-2027"
+  ],
+  "customMembers": [
+    {
+      "slNo": 1,
+      "name": "Mutthuraju"
+    },
+    {
+      "slNo": 2,
+      "name": "Shantharaju"
+    },
+    {
+      "slNo": 3,
+      "name": "Shankara"
+    },
+    {
+      "slNo": 4,
+      "name": "Harish"
+    },
+    {
+      "slNo": 5,
+      "name": "Shrinivasa"
+    },
+    {
+      "slNo": 6,
+      "name": "Baalu"
+    },
+    {
+      "slNo": 7,
+      "name": "Daasasetty"
+    },
+    {
+      "slNo": 8,
+      "name": "Rajanna"
+    },
+    {
+      "slNo": 9,
+      "name": "Prabhu"
+    },
+    {
+      "slNo": 10,
+      "name": "Pavi"
+    },
+    {
+      "slNo": 11,
+      "name": "Somanna"
+    },
+    {
+      "slNo": 12,
+      "name": "Manu"
+    },
+    {
+      "slNo": 13,
+      "name": "Ningaraju"
+    },
+    {
+      "slNo": 14,
+      "name": "Sharada"
+    },
+    {
+      "slNo": 15,
+      "name": "Nilamma"
+    },
+    {
+      "slNo": 16,
+      "name": "Shanthakumar"
+    },
+    {
+      "slNo": 17,
+      "name": "Gurumurthy"
+    },
+    {
+      "slNo": 18,
+      "name": "Hanumamma"
+    },
+    {
+      "slNo": 19,
+      "name": "Chikkaningasetty"
+    },
+    {
+      "slNo": 20,
+      "name": "Raju Auto"
+    }
+  ],
+  "rowMapping": {
+    "primaryWinnerRow": 24,
+    "primaryAmountRow": 25,
+    "primaryRemainingRow": 26,
+    "secondWinnerRow": 27,
+    "secondAmountRow": 28,
+    "finalRemainingRow": 29,
+    "firstRoundColIndex": 2
+  },
+  "lastSyncedAt": "2026-11-16T14:04:10.627Z",
+  "syncSource": "google_sheets_public",
+  "publicAutoSyncAvailable": true,
+  "lastSyncError": null
+}
